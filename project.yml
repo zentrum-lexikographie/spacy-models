@@ -1,0 +1,193 @@
+title: "DWDS NLP Pipeline"
+description: >
+  This project lets you train a part-of-speech tagger,
+  morphologizer, lemmatizer and dependency parser from a DWDS corpus. 
+  It takes care of data preparation, converting it to spaCy's format and training and
+  evaluating the model. Note that multi-word tokens will be merged
+  together when the corpus is converted since spaCy does not support multi-word
+  token expansion.
+
+# Variables can be referenced across the project.yml using ${vars.var_name}
+# UD_German-HDT/de_hdt-ud-train.conllu
+vars:
+  config: "default"
+  lang: "de"
+  package_name: "ud_de_dwds"
+  package_version: "0.1.0"
+  gpu: -1
+
+spacy_version: ">=3.3.0,<4.0.0"
+
+# These are the directories that the project needs. The project CLI will make
+# sure that they always exist.
+directories: ["assets", "corpus", "training", "metrics", "configs", "packages", "scripts"]
+
+# Sample data from corpora folder
+# parallel 'python3 scripts/sample.py {} -s 0.5 > assets/raw/{/}u' ::: /mnt/SSD/middell/corpora-conll-ud-trankit/{bild,fr*,kernbasis,noz*,nzz*,sz*,tsp*,welt,zeit}.conll
+#assets:
+#  - dest: "assets/${vars.treebank}"
+#    git:
+#      repo: "https://github.com/UniversalDependencies/${vars.treebank}"
+#      branch: "master"
+#      path: ""
+
+workflows:
+  all:
+    - preprocess
+    - train
+    - evaluate
+    - package
+
+  all-trf:
+    - preprocess
+    - train-trf
+    - evaluate-trf
+    - package-trf
+
+commands:
+  - name: preprocess
+    help: "Convert the data to spaCy's format"
+    script:
+      - "mkdir -p corpus"
+      - >-
+        python -m spacy convert
+        assets/dwds/train.conllu 
+        corpus/
+        --converter conllu 
+        --n-sents 32 
+        --merge-subtokens
+      - >-
+        python -m spacy convert 
+        assets/dwds/dev.conllu 
+        corpus/ 
+        --converter conllu 
+        --n-sents 32 
+        --merge-subtokens
+      - >-
+        python -m spacy convert 
+        assets/dwds/test.conllu
+        corpus/
+        --converter conllu 
+        --n-sents 32 
+        --merge-subtokens
+    deps:
+      - "assets/dwds/train.conllu"
+      - "assets/dwds/dev.conllu"
+      - "assets/dwds/test.conllu"
+    outputs:
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+      - "corpus/test.spacy"
+
+  - name: train
+    help: "Train ${vars.package_name}"
+    script:
+      - >-
+        python -m spacy train 
+        configs/${vars.config}.cfg
+        --output training/${vars.package_name}
+        --gpu-id ${vars.gpu} 
+        --nlp.lang=${vars.lang}
+    deps:
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+      - "configs/${vars.config}.cfg"
+    outputs:
+      - "training/${vars.package_name}/model-best"
+
+  - name: train-trf
+    help: "Train ${vars.package_name} transformer"
+    script:
+      - >-
+        python -m spacy train 
+        configs/default_trf.cfg
+        --output training/${vars.package_name}-trf
+        --gpu-id ${vars.gpu} 
+        --nlp.lang=${vars.lang}
+    deps:
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+      - "configs/${vars.config}.cfg"
+    outputs:
+      - "training/${vars.package_name}-trf/model-best"
+
+  - name: evaluate
+    help: "Evaluate on the test data and save the metrics"
+    script:
+      - >-
+        python -m spacy evaluate 
+        ./training/${vars.package_name}/model-best 
+        ./corpus/${vars.package_name}/test.spacy 
+        --output ./metrics/${vars.package_name}.json 
+        --gpu-id ${vars.gpu}
+    deps:
+      - "training/${vars.package_name}/model-best"
+      - "corpus/${vars.package_name}/test.spacy"
+    outputs:
+      - "metrics/${vars.package_name}.json"
+
+  - name: evaluate-trf
+    help: "Evaluate on the test data and save the metrics"
+    script:
+      - >-
+        python -m spacy evaluate 
+        ./training/${vars.package_name}-trf/model-best 
+        ./corpus/${vars.package_name}-trf/test.spacy 
+        --output ./metrics/${vars.package_name}-trf.json 
+        --gpu-id ${vars.gpu}
+    deps:
+      - "training/${vars.package_name}-trf/model-best"
+      - "corpus/${vars.package_name}-trf/test.spacy"
+    outputs:
+      - "metrics/${vars.package_name}-trf.json"
+
+  - name: package
+    help: "Package the trained model so it can be installed"
+    script:
+      - >-
+        python -m spacy package 
+        training/${vars.package_name}/model-best packages 
+        --name ${vars.package_name} 
+        --version ${vars.package_version}
+        --force
+    deps:
+      - "training/${vars.package_name}/model-best"
+    outputs_no_cache:
+      - "packages/${vars.lang}_${vars.package_name}-${vars.package_version}/dist/${vars.lang}_${vars.package_name}-${vars.package_version}.tar.gz"
+
+  - name: package-trf
+    help: "Package the trained model so it can be installed"
+    script:
+      - >-
+        python -m spacy package 
+        training/${vars.package_name}_trf/model-best packages 
+        --name ${vars.package_name}_trf 
+        --version ${vars.package_version}
+        --force
+    deps:
+      - "training/${vars.package_name}-trf/model-best"
+    outputs_no_cache:
+      - "packages/${vars.lang}_${vars.package_name}_trf${vars.package_version}/dist/${vars.lang}_${vars.package_name}-${vars.package_version}.tar.gz"
+
+  - name: clean
+    help: "Remove intermediate files"
+    script:
+      - "rm -rf training/*"
+      - "rm -rf metrics/*"
+      - "rm -rf corpus/*"
+
+  - name: visualize-model
+    help: Visualize the model's output interactively using Streamlit
+    script:
+      - "streamlit run scripts/visualize_model.py training/${vars.package_name}/model-best \"I like Berlin.\""
+    deps:
+      - "scripts/visualize_model.py"
+      - "training/${vars.package_name}/model-best"
+
+  - name: visualize-model-trf
+    help: Visualize the model's output interactively using Streamlit
+    script:
+      - "streamlit run scripts/visualize_model.py training/${vars.package_name}-trf/model-best \"I like Berlin.\""
+    deps:
+      - "scripts/visualize_model.py"
+      - "training/${vars.package_name}-trf/model-best"
