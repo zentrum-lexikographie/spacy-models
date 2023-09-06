@@ -1,0 +1,159 @@
+title: "DWDS NLP Pipeline"
+description: >
+  This project lets you train a part-of-speech tagger,
+  morphologizer, lemmatizer and dependency parser from a HDT corpus. 
+  It takes care of data preparation, converting it to spaCy's format and training and
+  evaluating the model. Note that multi-word tokens will be merged
+  together when the corpus is converted since spaCy does not support multi-word
+  token expansion.
+
+# Variables can be referenced across the project.yml using ${vars.var_name}
+# UD_German-HDT/de_hdt-ud-train.conllu
+vars:
+  config: "base.cfg"
+  lang: "de"
+  treebank: "UD_German-HDT"
+  package_name: "ud_de_hdt_sm"
+  package_version: "0.2.0"
+  gpu: -1
+
+spacy_version: ">=3.3.0,<4.0.0"
+
+# These are the directories that the project needs. The project CLI will make
+# sure that they always exist.
+directories: ["assets", "corpus", "training", "metrics", "configs", "packages", "scripts"]
+
+assets:
+  - dest: "assets/${vars.treebank}"
+    git:
+      repo: "https://github.com/UniversalDependencies/${vars.treebank}"
+      branch: "master"
+      path: ""
+
+workflows:
+  all:
+    - configure
+    - preprocess
+    - train
+    - evaluate
+    - package
+
+commands:
+  - name: configure
+    help: "Create full configuration file."
+    script:
+      - python -m spacy init fill-config configs/${vars.config} configs/config.cfg
+    deps:
+      - "configs/${vars.config}"
+    outputs:
+      - "configs/config.cfg"
+
+  - name: preprocess
+    help: "Convert the data to spaCy's format"
+    script:
+      - "mkdir -p corpus/${vars.treebank}"
+      - "python3 scripts/copy_files.py train conllu assets/${vars.treebank}/ corpus/${vars.treebank}/train.conllu"
+      - "cp assets/${vars.treebank}/de_hdt-ud-dev.conllu corpus/${vars.treebank}/dev.conllu"
+      - "cp assets/${vars.treebank}/de_hdt-ud-test.conllu corpus/${vars.treebank}/test.conllu"
+      - >-
+        python -m spacy convert
+        corpus/${vars.treebank}/train.conllu 
+        corpus/${vars.treebank}
+        --converter conllu 
+        --n-sents 32
+        --merge-subtokens
+      - >-
+        python -m spacy convert 
+        corpus/${vars.treebank}/dev.conllu 
+        corpus/${vars.treebank} 
+        --converter conllu 
+        --n-sents 32
+        --merge-subtokens
+      - >-
+        python -m spacy convert 
+        corpus/${vars.treebank}/test.conllu
+        corpus/${vars.treebank}
+        --converter conllu 
+        --n-sents 32
+        --merge-subtokens
+      - >-
+        python -m spacy init labels 
+        configs/config.cfg
+        corpus/${vars.treebank}
+        --paths.train corpus/${vars.treebank}/train.spacy
+        --paths.dev corpus/${vars.treebank}/dev.spacy
+        --paths.test corpus/${vars.treebank}/test.spacy
+    deps:
+      - "assets/${vars.treebank}/de_hdt-ud-train-a-1.conllu"
+      - "assets/${vars.treebank}/de_hdt-ud-train-a-2.conllu"
+      - "assets/${vars.treebank}/de_hdt-ud-train-b-1.conllu"
+      - "assets/${vars.treebank}/de_hdt-ud-train-b-2.conllu"
+      - "assets/${vars.treebank}/de_hdt-ud-dev.conllu"
+      - "assets/${vars.treebank}/de_hdt-ud-test.conllu"
+    outputs:
+      - "corpus/${vars.treebank}/train.spacy"
+      - "corpus/${vars.treebank}/dev.spacy"
+      - "corpus/${vars.treebank}/test.spacy"
+      - "configs/config.cfg"
+
+  - name: train
+    help: "Train ${vars.package_name}"
+    script:
+      - >-
+        python -m spacy train 
+        configs/config.cfg
+        --paths.train corpus/${vars.treebank}/train.spacy
+        --paths.dev corpus/${vars.treebank}/dev.spacy
+        --output training/${vars.package_name}
+        --gpu-id ${vars.gpu} 
+        --nlp.lang=${vars.lang}
+    deps:
+      - "corpus/${vars.treebank}/train.spacy"
+      - "corpus/${vars.treebank}/dev.spacy"
+      - "configs/${vars.config}"
+    outputs:
+      - "training/${vars.package_name}/model-best"
+
+  - name: evaluate
+    help: "Evaluate on the test data and save the metrics"
+    script:
+      - >-
+        python -m spacy evaluate 
+        training/${vars.package_name}/model-best 
+        corpus/${vars.treebank}/test.spacy 
+        --output ./metrics/${vars.package_name}.json 
+        --gpu-id ${vars.gpu}
+    deps:
+      - "training/${vars.package_name}/model-best"
+      - "corpus/${vars.treebank}/test.spacy"
+    outputs:
+      - "metrics/${vars.package_name}.json"
+
+  - name: package
+    help: "Package the trained model so it can be installed"
+    script:
+      - >-
+        python -m spacy package 
+        training/${vars.package_name}/model-best packages 
+        --name ${vars.package_name} 
+        --version ${vars.package_version}
+        --force
+    deps:
+      - "training/${vars.package_name}/model-best"
+    outputs_no_cache:
+      - "packages/${vars.lang}_${vars.package_name}-${vars.package_version}/dist/${vars.lang}_${vars.package_name}-${vars.package_version}.tar.gz"
+
+  - name: clean
+    help: "Remove intermediate files"
+    script:
+      - "rm -rf training/*"
+      - "rm -rf metrics/*"
+      - "rm -rf corpus/*"
+
+  - name: visualize-model
+    help: Visualize the model's output interactively using Streamlit
+    script:
+      - "streamlit run scripts/visualize_model.py training/${vars.package_name}/model-best \"I like Berlin.\""
+    deps:
+      - "scripts/visualize_model.py"
+      - "training/${vars.package_name}/model-best"
