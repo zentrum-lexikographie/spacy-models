@@ -1,1 +1,6 @@
-spacy-streamlit>=1.0.0a0
+spacy-streamlit==1.0.6
+spacy==3.6.0
+torch==1.13.1
+transformers==4.20.1
+huggingface-hub==0.16.4
+spacy-transformers==1.2.5
