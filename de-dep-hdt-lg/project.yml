@@ -13,7 +13,7 @@ vars:
   config: "base.cfg"
   lang: "de"
   treebank: "UD_German-HDT"
-  package_name: "ud_de_hdt_sm"
+  package_name: "ud_de_hdt_lg"
   package_version: "0.2.0"
   gpu: -1
 
@@ -90,11 +90,11 @@ commands:
       - "assets/${vars.treebank}/de_hdt-ud-train-b-2.conllu"
       - "assets/${vars.treebank}/de_hdt-ud-dev.conllu"
       - "assets/${vars.treebank}/de_hdt-ud-test.conllu"
+      - "configs/config.cfg"
     outputs:
       - "corpus/${vars.treebank}/train.spacy"
       - "corpus/${vars.treebank}/dev.spacy"
       - "corpus/${vars.treebank}/test.spacy"
-      - "configs/config.cfg"
 
   - name: train
     help: "Train ${vars.package_name}"

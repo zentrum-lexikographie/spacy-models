@@ -13,7 +13,7 @@ vars:
   config: "base.cfg"
   lang: "de"
   treebank: "UD_German-HDT"
-  package_name: "ud_de_hdt_sm"
+  package_name: "ud_de_hdt_electra"
   package_version: "0.2.0"
   gpu: -1
 
@@ -128,37 +128,6 @@ commands:
       - "corpus/${vars.treebank}/test.spacy"
     outputs:
       - "metrics/${vars.package_name}.json"
-
-#  - name: evaluate
-#    help: "Evaluate on the test data and save the metrics"
-#    script:
-#      # not on GPU to avoid RAM issues on long test texts
-#      - "python scripts/evaluate.py training/${vars.ud_treebank}/final assets/ud-treebanks-v2.5/${vars.ud_treebank}/ --output metrics/${vars.ud_treebank}.default --gpu-id -1"
-#      # for very large corpora like UD_German-HDT, you can split the test texts
-#      # with the rule-based sentencizer into smaller texts for evaluation
-#      #- "python scripts/evaluate.py training/${vars.ud_treebank}/final assets/ud-treebanks-v2.5/${vars.ud_treebank}/ --output metrics/${vars.ud_treebank}.default --gpu-id -1 --sents-per-text 500"
-#    deps:
-#      - "training/${vars.ud_treebank}/final"
-#      - "assets/ud-treebanks-v2.5/${vars.ud_treebank}/"
-#    outputs:
-#      - "metrics/${vars.ud_treebank}.default.txt"
-#      - "metrics/${vars.ud_treebank}.default.json"
-#
-#  - name: evaluate-with-senter
-#    help: "Evaluate on the test data and save the metrics"
-#    script:
-#      # not on GPU to avoid RAM issues on long test texts
-#      - "python scripts/evaluate.py training/${vars.ud_treebank}/final assets/ud-treebanks-v2.5/${vars.ud_treebank}/ --output metrics/${vars.ud_treebank}.senter --gpu-id -1 --enable-senter"
-#      # for very large corpora like UD_German-HDT, you can split the test texts
-#      # with the rule-based sentencizer into smaller texts for evaluation
-#      #- "python scripts/evaluate.py training/${vars.ud_treebank}/final assets/ud-treebanks-v2.5/${vars.ud_treebank}/ --output metrics/${vars.ud_treebank}.senter --gpu-id -1 --enable-senter --sents-per-text 500"
-#    deps:
-#      - "training/${vars.ud_treebank}/final"
-#      - "assets/ud-treebanks-v2.5/${vars.ud_treebank}/"
-#    outputs:
-#      - "metrics/${vars.ud_treebank}.senter.txt"
-#      - "metrics/${vars.ud_treebank}.senter.json"
-
 
   - name: package
     help: "Package the trained model so it can be installed"

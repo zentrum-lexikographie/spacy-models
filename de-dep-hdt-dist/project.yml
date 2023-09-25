@@ -90,11 +90,11 @@ commands:
       - "assets/${vars.treebank}/de_hdt-ud-train-b-2.conllu"
       - "assets/${vars.treebank}/de_hdt-ud-dev.conllu"
       - "assets/${vars.treebank}/de_hdt-ud-test.conllu"
+      - "configs/config.cfg"
     outputs:
       - "corpus/${vars.treebank}/train.spacy"
       - "corpus/${vars.treebank}/dev.spacy"
       - "corpus/${vars.treebank}/test.spacy"
-      - "configs/config.cfg"
 
   - name: train
     help: "Train ${vars.package_name}"
