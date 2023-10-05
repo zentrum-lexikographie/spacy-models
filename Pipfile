@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+spacy-streamlit = "==1.0.6"
+spacy = "==3.6.0"
+huggingface-hub = "==0.16.4"
+spacy-transformers = "==1.2.5"
+de-core-news-lg = {file = "https://github.com/explosion/spacy-models/releases/download/de_core_news_lg-3.6.0/de_core_news_lg-3.6.0-py3-none-any.whl"}
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
