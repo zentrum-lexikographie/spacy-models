@@ -13,7 +13,7 @@ vars:
   config: "base.cfg"
   lang: "de"
   treebank: "UD_German-HDT"
-  package_name: "ud_de_hdt_sm"
+  package_name: "dep_hdt_sm"
   package_version: "0.2.0"
   gpu: -1
 
@@ -166,6 +166,7 @@ commands:
       - >-
         python -m spacy package 
         training/${vars.package_name}/model-best packages 
+        --build wheel
         --name ${vars.package_name} 
         --version ${vars.package_version}
         --force
