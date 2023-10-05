@@ -1,0 +1,84 @@
+clean:
+  cmd: python -m spacy run clean
+  script:
+    - rm -rf training/*
+    - rm -rf metrics/*
+    - rm -rf corpus/*
+  deps: []
+  outs: []
+  spacy_version: 3.6.1
+  spacy_git_version: 458bc5f45
+preprocess:
+  cmd: python -m spacy run preprocess
+  script:
+    - mkdir -p assets/ud-german-hdt corpus/ud-german-hdt corpus/wikiner-de
+    - tar -x -f assets/ud-german-hdt.tar.gz --strip-components=1 -C assets/ud-german-hdt
+    - bash -c 'cat assets/ud-german-hdt/de_hdt-ud-train-a-1.conllu assets/ud-german-hdt/de_hdt-ud-train-a-2.conllu
+      assets/ud-german-hdt/de_hdt-ud-train-b-1.conllu assets/ud-german-hdt/de_hdt-ud-train-b-2.conllu
+      >corpus/ud-german-hdt/train.conllu'
+    - cp assets/ud-german-hdt/de_hdt-ud-dev.conllu corpus/ud-german-hdt/dev.conllu
+    - cp assets/ud-german-hdt/de_hdt-ud-test.conllu corpus/ud-german-hdt/test.conllu
+    - python -m spacy convert corpus/ud-german-hdt/train.conllu corpus/ud-german-hdt
+      --converter conllu --n-sents 32 --merge-subtokens
+    - python -m spacy convert corpus/ud-german-hdt/dev.conllu corpus/ud-german-hdt
+      --converter conllu --n-sents 32 --merge-subtokens
+    - python -m spacy convert corpus/ud-german-hdt/test.conllu corpus/ud-german-hdt
+      --converter conllu --n-sents 32 --merge-subtokens
+    - python scripts/partition.py assets/wikiner-de.bz2 assets/wikiner-de-iob
+    - python -m spacy convert assets/wikiner-de-iob corpus/wikiner-de --n-sents 10
+  deps:
+    - path: assets/ud-german-hdt.tar.gz
+      md5: d1f1a2dabb741ece8b2871be41b0f922
+    - path: assets/wikiner-de.bz2
+      md5: 618b5df97c9b6c3ed2482f1ef4937d8c
+  outs:
+    - path: corpus/ud-german-hdt/train.spacy
+      md5: 6ab77359d7f890244fed5208292d7c02
+    - path: corpus/ud-german-hdt/dev.spacy
+      md5: a15df4ab2e7fe1f6109cba5f384d5c91
+    - path: corpus/ud-german-hdt/test.spacy
+      md5: 7e974716b8b01d823aed5955050e0c63
+    - path: corpus/wikiner-de/train.spacy
+      md5: ce2db4cb8be2e5f8c5df72457a6c3c47
+    - path: corpus/wikiner-de/dev.spacy
+      md5: 9187711a522b963ad1e6fbd43b0b41c0
+    - path: corpus/wikiner-de/test.spacy
+      md5: add8eb2e7887941f2a9de4046f7b7166
+  spacy_version: 3.6.1
+  spacy_git_version: 458bc5f45
+configure-dep:
+  cmd: python -m spacy run configure-dep
+  script:
+    - python -m spacy init fill-config configs/dep-base.cfg configs/dep.cfg
+  deps:
+    - path: configs/dep-base.cfg
+      md5: bbc0f8717fd334ef42a2c21de13ae361
+  outs:
+    - path: configs/dep.cfg
+      md5: 5ecac3f1e975b2d2709c8efdb7089f55
+  spacy_version: 3.6.1
+  spacy_git_version: 458bc5f45
+label-init-dep:
+  cmd: python -m spacy run label-init-dep
+  script:
+    - python -m spacy init labels --gpu-id -1 configs/dep.cfg corpus/ud-german-hdt
+  deps:
+    - path: configs/dep.cfg
+      md5: 5ecac3f1e975b2d2709c8efdb7089f55
+    - path: corpus/ud-german-hdt/train.spacy
+      md5: 6ab77359d7f890244fed5208292d7c02
+    - path: corpus/ud-german-hdt/dev.spacy
+      md5: a15df4ab2e7fe1f6109cba5f384d5c91
+    - path: corpus/ud-german-hdt/test.spacy
+      md5: 7e974716b8b01d823aed5955050e0c63
+  outs:
+    - path: corpus/ud-german-hdt/tagger.json
+      md5: 3239762fb0e5de5fc4872329a0fdd34b
+    - path: corpus/ud-german-hdt/morphologizer.json
+      md5: d82ddfa790d2456e65816b23c49c2c31
+    - path: corpus/ud-german-hdt/trainable_lemmatizer.json
+      md5: baff8694d8a6a2829f36c50aaaa9e519
+    - path: corpus/ud-german-hdt/parser.json
+      md5: 3d2c81885250e0cc89c932527d69022d
+  spacy_version: 3.6.1
+  spacy_git_version: 458bc5f45

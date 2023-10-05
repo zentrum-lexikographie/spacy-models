@@ -1,0 +1,8 @@
+assets/
+corpus/
+training/
+metrics/
+packages/
+
+de-core-hdt-dist/configs/core.cfg
+de-core-hdt-dist/configs/dep.cfg
