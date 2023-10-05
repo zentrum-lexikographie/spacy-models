@@ -30,10 +30,17 @@ workflows:
     - configure-dep
     - label-init-dep
     - train-dep
+    - configure-ner
     - train-ner
     - evaluate-dep
     - evaluate-ner
-
+  dep:
+    - configure-dep
+    - label-init-dep
+    - train-dep
+  ner:
+    - configure-ner
+    - train-ner
 commands:
   - name: preprocess
     help: "Convert the data to spaCy's format"
@@ -156,8 +163,8 @@ commands:
         --output training/ner
         --gpu-id ${vars.gpu}
     deps:
-      - "corpus/ner/train.spacy"
-      - "corpus/ner/dev.spacy"
+      - "corpus/wikiner-de/train.spacy"
+      - "corpus/wikiner-de/dev.spacy"
       - "configs/ner.cfg"
     outputs:
       - "training/ner/model-best"
@@ -181,12 +188,12 @@ commands:
       - >-
         python -m spacy evaluate
         ./training/ner/model-best
-        ./corpus/ner/test.spacy
+        ./corpus/wikiner-de/test.spacy
         --output ./metrics/ner.json
         --gpu-id ${vars.gpu}
     deps:
       - "training/ner/model-best"
-      - "corpus/ner/test.spacy"
+      - "corpus/wikiner-de/test.spacy"
     outputs:
       - "metrics/ner.json"
   - name: "assemble"
