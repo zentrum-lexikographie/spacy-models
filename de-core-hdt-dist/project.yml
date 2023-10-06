@@ -29,20 +29,11 @@ assets:
 workflows:
   all:
     - preprocess
-    - configure-dep
-    - label-init-dep
+    - configure
     - train-dep
-    - configure-ner
     - train-ner
     - evaluate-dep
     - evaluate-ner
-  dep:
-    - configure-dep
-    - label-init-dep
-    - train-dep
-  ner:
-    - configure-ner
-    - train-ner
 commands:
   - name: preprocess
     help: "Convert the data to spaCy's format"
@@ -108,7 +99,7 @@ commands:
       - "corpus/wikiner-de/train.spacy"
       - "corpus/wikiner-de/dev.spacy"
       - "corpus/wikiner-de/test.spacy"
-  - name: configure-dep
+  - name: configure
     help: "Create full configuration file."
     script:
       - python -m spacy init fill-config configs/dep-base.cfg configs/dep.cfg
@@ -119,24 +110,6 @@ commands:
     outputs:
       - "configs/dep.cfg"
       - "configs/ner.cfg"
-  - name: label-init-dep
-    help: "Initializes labels"
-    script:
-      - >-
-        python -m spacy init labels
-        --gpu-id ${env.gpu}
-        configs/dep.cfg
-        corpus/ud-german-hdt
-    deps:
-      - "configs/dep.cfg"
-      - "corpus/ud-german-hdt/train.spacy"
-      - "corpus/ud-german-hdt/dev.spacy"
-      - "corpus/ud-german-hdt/test.spacy"
-    outputs:
-      - "corpus/ud-german-hdt/tagger.json"
-      - "corpus/ud-german-hdt/morphologizer.json"
-      - "corpus/ud-german-hdt/trainable_lemmatizer.json"
-      - "corpus/ud-german-hdt/parser.json"
   - name: train-dep
     help: "Train ${vars.package_name}"
     script:
