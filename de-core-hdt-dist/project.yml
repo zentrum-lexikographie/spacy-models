@@ -192,6 +192,6 @@ commands:
   - name: clean
     help: "Remove intermediate files"
     script:
-      - "rm -rf training/*"
-      - "rm -rf metrics/*"
-      - "rm -rf corpus/*"
+      - "rm -rf corpus/"
+      - "rm -rf metrics/"
+      - "rm -rf training/"
