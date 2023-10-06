@@ -20,7 +20,7 @@ directories: ["assets", "corpus", "training", "metrics", "configs", "packages", 
 
 assets:
   - dest: "assets/ud-german-hdt.tar.gz"
-    url: https://codeload.github.com/UniversalDependencies/UD_German-HDT/tar.gz/refs/tags/r2.12
+    url: "https://codeload.github.com/UniversalDependencies/UD_German-HDT/tar.gz/refs/tags/r2.12"
   - dest: "assets/wikiner-de.bz2"
     url: "https://raw.githubusercontent.com/dice-group/FOX/master/input/Wikiner/aij-wikiner-de-wp3.bz2"
 
@@ -110,10 +110,13 @@ commands:
     help: "Create full configuration file."
     script:
       - python -m spacy init fill-config configs/dep-base.cfg configs/dep.cfg
+      - python -m spacy init fill-config configs/ner-base.cfg configs/ner.cfg
     deps:
       - "configs/dep-base.cfg"
+      - "configs/ner-base.cfg"
     outputs:
       - "configs/dep.cfg"
+      - "configs/ner.cfg"
   - name: label-init-dep
     help: "Initializes labels"
     script:
@@ -146,14 +149,6 @@ commands:
       - "configs/dep.cfg"
     outputs:
       - "training/dep/model-best"
-  - name: configure-ner
-    help: "Create full configuration file."
-    script:
-      - python -m spacy init fill-config configs/ner-base.cfg configs/ner.cfg
-    deps:
-      - "configs/ner-base.cfg"
-    outputs:
-      - "configs/ner.cfg"
   - name: train-ner
     help: "Train the full pipeline"
     script:
