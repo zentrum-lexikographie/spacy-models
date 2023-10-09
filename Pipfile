@@ -4,9 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-huggingface-hub = "*"
 de-core-news-lg = {file = "https://github.com/explosion/spacy-models/releases/download/de_core_news_lg-3.7.0/de_core_news_lg-3.7.0-py3-none-any.whl"}
 spacy = {extras = ["transformers", "cuda117"], version = "*"}
+spacy-huggingface-hub = "*"
 
 [dev-packages]
 
