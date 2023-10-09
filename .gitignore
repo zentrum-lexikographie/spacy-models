@@ -4,5 +4,7 @@ training/
 metrics/
 packages/
 
-de-core-hdt-dist/configs/dep.cfg
-de-core-hdt-dist/configs/ner.cfg
+configs/dep-lg.cfg
+configs/dep-dist.cfg
+configs/ner-lg.cfg
+configs/ner-dist.cfg

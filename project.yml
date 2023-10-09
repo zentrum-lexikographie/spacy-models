@@ -1,0 +1,282 @@
+title: "DWDS NLP Pipeline"
+description: >
+  This project trains a part-of-speech tagger, morphologizer,
+  lemmatizer, dependency parser and NER tagger from the German UD-HDT
+  and WikiNER corpus.  It takes care of data preparation, converting
+  it to spaCy's format, training separate models for GPU (-dist) and
+  CPU (-lg) architectures, as well as evaluating the trained
+  models. Note that multi-word tokens will be merged together when the
+  corpus is converted since spaCy does not support multi-word token
+  expansion.
+
+env:
+  gpu: GPU_ID
+  version: VERSION
+
+directories:
+  - "assets"
+  - "configs"
+  - "corpus"
+  - "training"
+  - "metrics"
+  - "packages"
+
+assets:
+  - dest: "assets/ud-german-hdt.tar.gz"
+    url: "https://codeload.github.com/UniversalDependencies/UD_German-HDT/tar.gz/refs/tags/r2.12"
+  - dest: "assets/wikiner-de.bz2"
+    url: "https://raw.githubusercontent.com/dice-group/FOX/master/input/Wikiner/aij-wikiner-de-wp3.bz2"
+
+workflows:
+  all:
+    - preprocess
+    - configure
+    - train-dep-lg
+    - train-ner-lg
+    - evaluate-dep-lg
+    - evaluate-ner-lg
+    - assemble-lg
+    - train-dep-dist
+    - train-ner-dist
+    - evaluate-dep-dist
+    - evaluate-ner-dist
+    - assemble-dist
+    - package
+
+commands:
+  - name: preprocess
+    help: "Convert the corpus data to spaCy's format"
+    script:
+      - >-
+        mkdir -p assets/ud-german-hdt corpus/ud-german-hdt corpus/wikiner-de
+      - >-
+        tar -x -f assets/ud-german-hdt.tar.gz
+        --strip-components=1
+        -C assets/ud-german-hdt
+      - >-
+        bash -c 'cat
+        assets/ud-german-hdt/de_hdt-ud-train-a-1.conllu
+        assets/ud-german-hdt/de_hdt-ud-train-a-2.conllu
+        assets/ud-german-hdt/de_hdt-ud-train-b-1.conllu
+        assets/ud-german-hdt/de_hdt-ud-train-b-2.conllu
+        >corpus/ud-german-hdt/train.conllu'
+      - >-
+        cp
+        assets/ud-german-hdt/de_hdt-ud-dev.conllu
+        corpus/ud-german-hdt/dev.conllu
+      - >-
+        cp
+        assets/ud-german-hdt/de_hdt-ud-test.conllu
+        corpus/ud-german-hdt/test.conllu
+      - >-
+        python -m spacy convert
+        corpus/ud-german-hdt/train.conllu
+        corpus/ud-german-hdt
+        --converter conllu
+        --n-sents 32
+        --merge-subtokens
+      - >-
+        python -m spacy convert
+        corpus/ud-german-hdt/dev.conllu
+        corpus/ud-german-hdt
+        --converter conllu
+        --n-sents 32
+        --merge-subtokens
+      - >-
+        python -m spacy convert
+        corpus/ud-german-hdt/test.conllu
+        corpus/ud-german-hdt
+        --converter conllu
+        --n-sents 32
+        --merge-subtokens
+      - >-
+        python scripts/partition.py
+        assets/wikiner-de.bz2
+        assets/wikiner-de-iob
+      - >-
+        python -m spacy convert
+        assets/wikiner-de-iob
+        corpus/wikiner-de
+        --n-sents 10
+    deps:
+      - "assets/ud-german-hdt.tar.gz"
+      - "assets/wikiner-de.bz2"
+    outputs:
+      - "corpus/ud-german-hdt/train.spacy"
+      - "corpus/ud-german-hdt/dev.spacy"
+      - "corpus/ud-german-hdt/test.spacy"
+      - "corpus/wikiner-de/train.spacy"
+      - "corpus/wikiner-de/dev.spacy"
+      - "corpus/wikiner-de/test.spacy"
+  - name: configure
+    help: "Create full configuration files."
+    script:
+      - python -m spacy init fill-config configs/dep-lg-base.cfg configs/dep-lg.cfg
+      - python -m spacy init fill-config configs/dep-dist-base.cfg configs/dep-dist.cfg
+      - python -m spacy init fill-config configs/ner-lg-base.cfg configs/ner-lg.cfg
+      - python -m spacy init fill-config configs/ner-dist-base.cfg configs/ner-dist.cfg
+    deps:
+      - "configs/dep-lg-base.cfg"
+      - "configs/dep-dist-base.cfg"
+      - "configs/ner-lg-base.cfg"
+      - "configs/ner-dist-base.cfg"
+    outputs:
+      - "configs/dep-lg.cfg"
+      - "configs/dep-dist.cfg"
+      - "configs/ner-lg.cfg"
+      - "configs/ner-dist.cfg"
+  - name: train-dep-lg
+    help: "Train dep-lg"
+    script:
+      - >-
+        python -m spacy train
+        configs/dep-lg.cfg
+        --output training/dep-lg
+        --gpu-id ${env.gpu}
+    deps:
+      - "corpus/ud-german-hdt/train.spacy"
+      - "corpus/ud-german-hdt/dev.spacy"
+      - "configs/dep-lg.cfg"
+    outputs:
+      - "training/dep-lg/model-best"
+  - name: train-dep-dist
+    help: "Train dep-dist"
+    script:
+      - >-
+        python -m spacy train
+        configs/dep-dist.cfg
+        --output training/dep-dist
+        --gpu-id ${env.gpu}
+    deps:
+      - "corpus/ud-german-hdt/train.spacy"
+      - "corpus/ud-german-hdt/dev.spacy"
+      - "configs/dep-dist.cfg"
+    outputs:
+      - "training/dep-dist/model-best"
+  - name: train-ner-lg
+    help: "Train ner-lg"
+    script:
+      - >-
+        python -m spacy train
+        configs/ner-lg.cfg
+        --output training/ner-lg
+        --gpu-id ${env.gpu}
+    deps:
+      - "corpus/wikiner-de/train.spacy"
+      - "corpus/wikiner-de/dev.spacy"
+      - "configs/ner-lg.cfg"
+    outputs:
+      - "training/ner-lg/model-best"
+  - name: train-ner-dist
+    help: "Train ner-dist"
+    script:
+      - >-
+        python -m spacy train
+        configs/ner-dist.cfg
+        --output training/ner-dist
+        --gpu-id ${env.gpu}
+    deps:
+      - "corpus/wikiner-de/train.spacy"
+      - "corpus/wikiner-de/dev.spacy"
+      - "configs/ner-dist.cfg"
+    outputs:
+      - "training/ner-dist/model-best"
+  - name: evaluate-dep-lg
+    help: "Evaluate dep-lg"
+    script:
+      - >-
+        python -m spacy evaluate
+        training/dep-lg/model-best
+        corpus/ud-german-hdt/test.spacy
+        --output ./metrics/dep-lg.json
+    deps:
+      - "training/dep-lg/model-best"
+      - "corpus/ud-german-hdt/test.spacy"
+    outputs:
+      - "metrics/dep-lg.json"
+  - name: evaluate-dep-dist
+    help: "Evaluate dep-dist"
+    script:
+      - >-
+        python -m spacy evaluate
+        training/dep-dist/model-best
+        corpus/ud-german-hdt/test.spacy
+        --output ./metrics/dep-dist.json
+        --gpu-id ${env.gpu}
+    deps:
+      - "training/dep-dist/model-best"
+      - "corpus/ud-german-hdt/test.spacy"
+    outputs:
+      - "metrics/dep-dist.json"
+  - name: evaluate-ner-lg
+    help: "Evaluate ner-lg"
+    script:
+      - >-
+        python -m spacy evaluate
+        ./training/ner-lg/model-best
+        ./corpus/wikiner-de/test.spacy
+        --output ./metrics/ner-lg.json
+    deps:
+      - "training/ner-lg/model-best"
+      - "corpus/wikiner-de/test.spacy"
+    outputs:
+      - "metrics/ner-lg.json"
+  - name: evaluate-ner-dist
+    help: "Evaluate ner-dist"
+    script:
+      - >-
+        python -m spacy evaluate
+        ./training/ner-dist/model-best
+        ./corpus/wikiner-de/test.spacy
+        --output ./metrics/ner-dist.json
+        --gpu-id ${env.gpu}
+    deps:
+      - "training/ner-dist/model-best"
+      - "corpus/wikiner-de/test.spacy"
+    outputs:
+      - "metrics/ner-dist.json"
+  - name: "assemble-lg"
+    help: "Assemble lg."
+    script:
+      - spacy assemble configs/dwds-lg.cfg training/dwds-lg
+    deps:
+      - training/dep-lg/model-best
+      - training/ner-lg/model-best
+      - configs/dwds-lg.cfg
+  - name: "assemble-dist"
+    help: "Assemble dist."
+    script:
+      - spacy assemble configs/dwds-dist.cfg training/dwds-dist
+    deps:
+      - training/dep-dist/model-best
+      - training/ner-dist/model-best
+      - configs/dwds-dist.cfg
+  - name: package
+    help: "Package dwds-lg and dwds-dist"
+    script:
+      - >-
+        python -m spacy package
+        training/dwds-lg packages
+        --name dwds_hdt_lg
+        --version ${env.version}
+        --build wheel
+        --force
+      - >-
+        python -m spacy package
+        training/dwds-dist packages
+        --name dwds_hdt_dist
+        --version ${env.version}
+        --build wheel
+        --force
+    deps:
+      - "training/dwds-lg"
+      - "training/dwds-dist"
+    outputs_no_cache:
+      - "packages/de_dwds_hdt_lg-${env.version}/dist/de_dwds_hdt_lg-${env.version}.tar.gz"
+      - "packages/de_dwds_hdt_dist-${env.version}/dist/de_dwds_hdt_dist-${env.version}.tar.gz"
+  - name: clean
+    help: "Remove intermediate files"
+    script:
+      - "rm -rf corpus/"
+      - "rm -rf metrics/"
+      - "rm -rf training/"

@@ -9,7 +9,7 @@ clean:
   spacy_version: 3.6.1
   spacy_git_version: 458bc5f45
 preprocess:
-  cmd: python -m spacy run preprocess
+  cmd: python -m weasel run preprocess
   script:
     - mkdir -p assets/ud-german-hdt corpus/ud-german-hdt corpus/wikiner-de
     - tar -x -f assets/ud-german-hdt.tar.gz --strip-components=1 -C assets/ud-german-hdt
@@ -44,8 +44,6 @@ preprocess:
       md5: 9187711a522b963ad1e6fbd43b0b41c0
     - path: corpus/wikiner-de/test.spacy
       md5: add8eb2e7887941f2a9de4046f7b7166
-  spacy_version: 3.6.1
-  spacy_git_version: 458bc5f45
 configure-dep:
   cmd: python -m spacy run configure-dep
   script:
