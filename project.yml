@@ -35,12 +35,10 @@ workflows:
     - train-ner-lg
     - evaluate-dep-lg
     - evaluate-ner-lg
-    - assemble-lg
     - train-dep-dist
     - train-ner-dist
     - evaluate-dep-dist
     - evaluate-ner-dist
-    - assemble-dist
     - package
 
 commands:
@@ -235,45 +233,47 @@ commands:
       - "corpus/wikiner-de/test.spacy"
     outputs:
       - "metrics/ner-dist.json"
-  - name: "assemble-lg"
-    help: "Assemble lg."
-    script:
-      - spacy assemble configs/dwds-lg.cfg training/dwds-lg
-    deps:
-      - training/dep-lg/model-best
-      - training/ner-lg/model-best
-      - configs/dwds-lg.cfg
-  - name: "assemble-dist"
-    help: "Assemble dist."
-    script:
-      - spacy assemble configs/dwds-dist.cfg training/dwds-dist
-    deps:
-      - training/dep-dist/model-best
-      - training/ner-dist/model-best
-      - configs/dwds-dist.cfg
   - name: package
-    help: "Package dwds-lg and dwds-dist"
+    help: "Package dwds-dep-lg, dwds-dep-dist, dwds-ner_lg and dwds-ner-dist"
     script:
       - >-
         python -m spacy package
-        training/dwds-lg packages
-        --name dwds_hdt_lg
+        training/dep-lg packages
+        --name dwds_dep_hdt_lg
         --version ${env.version}
         --build wheel
         --force
       - >-
         python -m spacy package
-        training/dwds-dist packages
-        --name dwds_hdt_dist
+        training/dep-dist packages
+        --name dwds_dep_hdt_dist
+        --version ${env.version}
+        --build wheel
+        --force
+      - >-
+        python -m spacy package
+        training/ner-lg packages
+        --name dwds_ner_lg
+        --version ${env.version}
+        --build wheel
+        --force
+      - >-
+        python -m spacy package
+        training/ner-dist packages
+        --name dwds_ner_dist
         --version ${env.version}
         --build wheel
         --force
     deps:
-      - "training/dwds-lg"
-      - "training/dwds-dist"
+      - "training/dep-lg"
+      - "training/dep-dist"
+      - "training/ner-lg"
+      - "training/ner-dist"
     outputs_no_cache:
-      - "packages/de_dwds_hdt_lg-${env.version}/dist/de_dwds_hdt_lg-${env.version}.tar.gz"
-      - "packages/de_dwds_hdt_dist-${env.version}/dist/de_dwds_hdt_dist-${env.version}.tar.gz"
+      - "packages/de_dwds_dep_hdt_lg-${env.version}/dist/de_dwds_dep_hdt_lg-${env.version}.tar.gz"
+      - "packages/de_dwds_dep_hdt_dist-${env.version}/dist/de_dwds_dep_hdt_dist-${env.version}.tar.gz"
+      - "packages/de_dwds_ner_lg-${env.version}/dist/de_dwds_ner_lg-${env.version}.tar.gz"
+      - "packages/de_dwds_ner_dist-${env.version}/dist/de_dwds_ner_dist-${env.version}.tar.gz"
   - name: clean
     help: "Remove intermediate files"
     script:
