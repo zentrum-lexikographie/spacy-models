@@ -238,37 +238,37 @@ commands:
     script:
       - >-
         python -m spacy package
-        training/dep-lg packages
+        training/dep-lg/model-best packages
         --name dwds_dep_hdt_lg
         --version ${env.version}
         --build wheel
         --force
       - >-
         python -m spacy package
-        training/dep-dist packages
+        training/dep-dist/model-best packages
         --name dwds_dep_hdt_dist
         --version ${env.version}
         --build wheel
         --force
       - >-
         python -m spacy package
-        training/ner-lg packages
+        training/ner-lg/model-best packages
         --name dwds_ner_lg
         --version ${env.version}
         --build wheel
         --force
       - >-
         python -m spacy package
-        training/ner-dist packages
+        training/ner-dist/model-best packages
         --name dwds_ner_dist
         --version ${env.version}
         --build wheel
         --force
     deps:
-      - "training/dep-lg"
-      - "training/dep-dist"
-      - "training/ner-lg"
-      - "training/ner-dist"
+      - "training/dep-lg/model-best"
+      - "training/dep-dist/model-best"
+      - "training/ner-lg/model-best"
+      - "training/ner-dist/model-best"
     outputs_no_cache:
       - "packages/de_dwds_dep_hdt_lg-${env.version}/dist/de_dwds_dep_hdt_lg-${env.version}.tar.gz"
       - "packages/de_dwds_dep_hdt_dist-${env.version}/dist/de_dwds_dep_hdt_dist-${env.version}.tar.gz"
