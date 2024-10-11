@@ -3,14 +3,11 @@
 .python-version
 
 *.egg-info
+*.temp
 
 assets/
+configs/filled/
 corpus/
 training/
 metrics/
 packages/
-
-configs/dep-lg.cfg
-configs/dep-dist.cfg
-configs/ner-lg.cfg
-configs/ner-dist.cfg

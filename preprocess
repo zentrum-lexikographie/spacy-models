@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+
+import bz2
+import random
+import tarfile
+from pathlib import Path
+from typing import Dict
+
+from spacy.tokens import DocBin
+from spacy.training.converters import conllu_to_docs, iob_to_docs
+from wasabi import msg
+
+project_dir = Path(__file__).parent.resolve()
+
+assets_dir = project_dir / "assets"
+corpus_dir = project_dir / "corpus"
+
+ud_german_hdt_splits: Dict[str, list] = {"train": [], "test": [], "dev": []}
+
+msg.divider("Preprocessing UD-German-HDT")
+
+ud_german_hdt_tarball = assets_dir / "ud-german-hdt.tar.gz"
+with tarfile.open(ud_german_hdt_tarball) as ud_german_hdt_tb:
+    for ud_german_hdt_f in ud_german_hdt_tb:
+        name = ud_german_hdt_f.name
+        if not name.endswith(".conllu"):
+            continue
+        if "dev" in name:
+            bucket = "dev"
+        elif "test" in name:
+            bucket = "test"
+        else:
+            bucket = "train"
+        with ud_german_hdt_tb.extractfile(ud_german_hdt_f) as f:  # type: ignore
+            contents = f.read().decode("utf-8")
+            docs = conllu_to_docs(
+                contents, n_sents=32, merge_subtokens=True, no_print=True
+            )
+            ud_german_hdt_splits[bucket].extend(docs)
+
+ud_german_hdt_dir = corpus_dir / "ud-german-hdt"
+ud_german_hdt_dir.mkdir(parents=True, exist_ok=True)
+
+for bucket, docs in ud_german_hdt_splits.items():
+    db = DocBin(docs=docs, store_user_data=True)
+    target_f = ud_german_hdt_dir / f"{bucket}.spacy"
+    target_f.write_bytes(db.to_bytes())
+
+msg.divider("Preprocessing WikiNer")
+
+wikiner_de_dir = corpus_dir / "wikiner-de"
+wikiner_de_dir.mkdir(parents=True, exist_ok=True)
+
+wikiner_de_source = assets_dir / "wikiner-de.bz2"
+with bz2.open(wikiner_de_source, "rt", encoding="utf-8") as wikiner_de_f:
+    lines = [line.strip() for line in wikiner_de_f.readlines()]
+
+    random.seed(0)
+    random.shuffle(lines)
+
+    dev_size = int(0.2 * len(lines))
+    test_size = int(0.2 * len(lines))
+    train_size = (len(lines) - dev_size) - test_size
+
+    train_lines = lines[:train_size]
+    dev_lines = lines[train_size : train_size + dev_size]
+    test_lines = lines[train_size + dev_size :]
+
+    wikiner_de_splits = {
+        "train": iob_to_docs("\n".join(train_lines), no_print=True),
+        "dev": iob_to_docs("\n".join(dev_lines), no_print=True),
+        "test": iob_to_docs("\n".join(test_lines), no_print=True),
+    }
+    for bucket, docs in wikiner_de_splits.items():
+        db = DocBin(docs=docs, store_user_data=True)
+        target_f = wikiner_de_dir / f"{bucket}.spacy"
+        target_f.write_bytes(db.to_bytes())

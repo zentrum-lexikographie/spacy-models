@@ -4,16 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spacy-models-de-hdt-wikiner"
-version = "0.0.0"
 description = "German spaCy models trained on German UD-HDT and the WikiNER corpus"
 authors = [
     {name = "René Knaebel", email = "rknaebel@uni-potsdam.de"},
     {name = "Gregor Middell", email = "gregor.middell@bbaw.de"}
 ]
-dependencies = [
-    "spacy",
-    "spacy-huggingface-hub",
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Programming Language :: Python :: 3",
+    "Topic :: Text Processing :: Linguistic",
 ]
+dependencies = [
+    "build",
+    "spacy-huggingface-hub"
+]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
@@ -22,12 +28,17 @@ dev = [
     "mypy",
     "pre-commit"
 ]
-gpu = [
-    "spacy[transformers,cuda117]",
-]
+cpu = ["spacy"]
+gpu = ["spacy[transformers,cuda11x]"]
 
 [project.urls]
 Homepage = "https://github.com/zentrum-lexikographie/spacy-models-de-hdt-wikiner"
 
 [tool.isort]
 profile = "black"
+
+[tool.setuptools]
+packages = []
+
+[tool.setuptools.dynamic]
+version = {file = ["VERSION"]}
