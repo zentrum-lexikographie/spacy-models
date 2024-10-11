@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spacy-models-de-hdt-wikiner"
+version = "0.0.0"
+description = "German spaCy models trained on German UD-HDT and the WikiNER corpus"
+authors = [
+    {name = "René Knaebel", email = "rknaebel@uni-potsdam.de"},
+    {name = "Gregor Middell", email = "gregor.middell@bbaw.de"}
+]
+dependencies = [
+    "spacy",
+    "spacy-huggingface-hub",
+]
+
+[project.optional-dependencies]
+dev = [
+    "flake8",
+    "flake8-bugbear",
+    "mypy",
+    "pre-commit"
+]
+gpu = [
+    "spacy[transformers,cuda117]",
+]
+
+[project.urls]
+Homepage = "https://github.com/zentrum-lexikographie/spacy-models-de-hdt-wikiner"
+
+[tool.isort]
+profile = "black"
