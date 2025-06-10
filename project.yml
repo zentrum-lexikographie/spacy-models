@@ -19,7 +19,7 @@ directories:
 
 assets:
   - dest: "assets/ud-german-hdt.tar.gz"
-    url: "https://codeload.github.com/UniversalDependencies/UD_German-HDT/tar.gz/refs/tags/r2.12"
+    url: "https://codeload.github.com/UniversalDependencies/UD_German-HDT/tar.gz/refs/tags/r2.15"
   - dest: "assets/wikiner-de.bz2"
     url: "https://github.com/dice-group/FOX/raw/refs/tags/v2.3.0/input/Wikiner/aij-wikiner-de-wp3.bz2"
 
