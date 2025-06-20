@@ -1,13 +1,12 @@
-.flake8
-.pre-commit-config.yaml
+*.pyc
+__pycache__/
+
 .python-version
 
 *.egg-info
 *.temp
 
-assets/
+dataset/*.spacy
 configs/filled/
-corpus/
 training/
-metrics/
 packages/
