@@ -20,8 +20,8 @@ requires-python = ">=3.12"
 dynamic = ["readme", "version", "dependencies", "optional-dependencies"]
 
 [project.scripts]
-spacy-models-build = "spacy_models.build:main"
-spacy-models-dataset = "spacy_models.dataset:main"
+spacy-models-build = "zdl_spacy.build:main"
+spacy-models-dataset = "zdl_spacy.dataset:main"
 
 [project.urls]
 Homepage = "https://github.com/zentrum-lexikographie/spacy-models"
@@ -32,11 +32,15 @@ profile = "black"
 [tool.mypy]
 disable_error_code = "import-untyped"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"], content-type = "text/markdown"}
-version = {attr = "spacy_models.version.__version__"}
+version = {attr = "zdl_spacy.version.__version__"}
 dependencies = { file = ["requirements.txt"] }
 optional-dependencies.dev = { file = ["requirements.dev.txt"] }
 
 [tool.setuptools.packages.find]
 where = ["."]
+exclude = ["tests"]
