@@ -3,8 +3,7 @@ import subprocess
 
 import spacy
 import thinc.api
-
-__version__ = "2.0.0"  # FIXME: align with releases (zdl_spacy.version.__version__)
+from zdl.spacy.version import __version__
 
 
 def model_package_spec(model):
