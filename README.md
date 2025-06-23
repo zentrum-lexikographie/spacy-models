@@ -54,12 +54,25 @@ spacy-models-dataset
 
 ## Datasets
 
-* E. B. Völker, M. Wendt, F. Hennig, and A. Köhn (2019). HDT-UD: A very large Universal Dependencies Treebank for German. Proceedings of the Third Workshop on Universal Dependencies (UDW, SyntaxFest 2019), pages 46–57, Paris, France. Association for Computational Linguistics.
-* D. Benikova, C. Biemann, M. Reznicek (2014). NoSta-D Named Entity Annotation for German: Guidelines and Dataset. Proceedings of LREC 2014, Reykjavik, Iceland.
-* M. Schiersch, V. Mironova, M. Schmitt, P. Thomas, A. Gabryszak, L. Hennig (2018). A German Corpus for Fine-Grained Named Entity Recognition and Relation Extraction of Traffic and Industry Events. Proceedings of LREC 2018, Miyazaki, Japan.
-* J. Zöllner, K. Sperfeld, C. Wick, R. Labahn (2021). Optimizing Small BERTs Trained for German NER. Information 2021, 12, 443.
-* M. Ehrmann, M. Romanello, A. Flückiger, and S. Clematide (2020). Extended Overview of CLEF HIPE 2020: Named Entity Processing on Historical Newspapers in Working Notes of CLEF 2020 - Conference and Labs of the Evaluation Forum, Thessaloniki, Greece, 2020, vol. 2696, p. 38. doi: 10.5281/zenodo.4117566.
-* L. Hennig, P. T. Truong, A. Gabryszak (2021). Mobie: A German Dataset for Named Entity Recognition, Entity Linking and Relation Extraction in the Mobility Domain. arXiv preprint arXiv:2108.06955.
-* A. Hamdi, E. Linhares Pontes, E. Boros, T. T. H. Nguyen, G. Hackl, J. G. Moreno, A. Doucet (2021). Multilingual Dataset for Named Entity Recognition, Entity Linking and Stance Detection in Historical Newspapers (V1.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.4573313
-* J. Nothman, N. Ringland, W. Radford, T. Murphy, J. R. Curran (2013). Learning Multilingual Named Entity Recognition from Wikipedia. Artificial Intelligence, 194, 151-175.
-* S. Schweter (2025). HisGermaNER (Revision 83571b3). doi: 10.57967/hf/5770, https://huggingface.co/datasets/stefan-it/HisGermaNER
+
+* Benikova, Darina, Chris Biemann, und Marc Reznicek. „NoSta-D Named Entity Annotation for German: Guidelines and Dataset“. In Proceedings of the Ninth International Conference on Language Resources and Evaluation (LREC’14), herausgegeben von Nicoletta Calzolari, Khalid Choukri, Thierry Declerck, Hrafn Loftsson, Bente Maegaard, Joseph Mariani, Asuncion Moreno, Jan Odijk, und Stelios Piperidis, 2524–31. Reykjavik, Iceland: European Language Resources Association (ELRA), 2014. https://aclanthology.org/L14-1251/.
+* Borges Völker, Emanuel, Maximilian Wendt, Felix Hennig, und Arne Köhn. „HDT-UD: A very large Universal Dependencies Treebank for German“. In Proceedings of the Third Workshop on Universal Dependencies (UDW, SyntaxFest 2019), herausgegeben von Alexandre Rademaker und Francis Tyers, 46–57. Paris, France: Association for Computational Linguistics, 2019. https://doi.org/10.18653/v1/W19-8006.
+* Ehrmann, Maud, Matteo Romanello, SImon Clematide, und Alex Flückiger. „CLEF-HIPE-2020 Shared Task Named Entity Datasets“. Zenodo, 11. März 2020. https://zenodo.org/records/6046853.
+Hamdi, Ahmed, Elvys Linhares Pontes, Emanuela Boros, Thi Tuyet Hai Nguyen, Günter Hackl, Jose G. Moreno, und Antoine Doucet. „A Multilingual Dataset for Named Entity Recognition, Entity Linking and Stance Detection in Historical Newspapers“. Gehalten auf der The 44th International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2021), 15. April 2021. https://doi.org/10.5281/zenodo.4694466.
+* Hennig, Leonhard, Phuc Tran Truong, und Aleksandra Gabryszak. „MobIE: A German Dataset for Named Entity Recognition, Entity Linking and Relation Extraction in the Mobility Domain“. In Proceedings of the 17th Conference on Natural Language Processing (KONVENS 2021), herausgegeben von Kilian Evang, Laura Kallmeyer, Rainer Osswald, Jakub Waszczuk, und Torsten Zesch, 223–27. Düsseldorf, Germany: KONVENS 2021 Organizers, 2021. https://aclanthology.org/2021.konvens-1.22/.
+* Nothman, Joel, Nicky Ringland, Will Radford, Tara Murphy, und James R. Curran. „Learning multilingual named entity recognition from Wikipedia“. Artificial Intelligence, Artificial Intelligence, Wikipedia and Semi-Structured Resources, 194 (1. Januar 2013): 151–75. https://doi.org/10.1016/j.artint.2012.03.006.
+* Schiersch, Martin, Veselina Mironova, Maximilian Schmitt, Philippe Thomas, Aleksandra Gabryszak, und Leonhard Hennig. „A German Corpus for Fine-Grained Named Entity Recognition and Relation Extraction of Traffic and Industry Events“. In Proceedings of the Eleventh International Conference on Language Resources and Evaluation (LREC 2018), herausgegeben von Nicoletta Calzolari, Khalid Choukri, Christopher Cieri, Thierry Declerck, Sara Goggi, Koiti Hasida, Hitoshi Isahara, u. a. Miyazaki, Japan: European Language Resources Association (ELRA), 2018. https://aclanthology.org/L18-1703/.
+* Schweter, Stefan. „HisGermaNER (Revision 83571b3)“. Hugging Face, 2025. https://doi.org/10.57967/hf/5770.
+* Tjong Kim Sang, Erik F., und Fien De Meulder. „Introduction to the CoNLL-2003 Shared Task: Language-Independent Named Entity Recognition“. In Proceedings of the Seventh Conference on Natural Language Learning at HLT-NAACL 2003, 142–47, 2003. https://aclanthology.org/W03-0419/.
+* Zöllner, Jochen, Konrad Sperfeld, Christoph Wick, und Roger Labahn. „Optimizing small BERTs trained for German NER“. Information 12, Nr. 11 (25. Oktober 2021): 443. https://doi.org/10.3390/info12110443.
+
+
+## License
+
+While the code of this project is licensed under the GNU General
+Public License v3, the datasets used for training and evaluating the
+resulting models are licensed under different terms, most commonly
+under a Creative Commons license, but with different restrictions and
+conditions regarding their reuse. Therefore, before reusing the
+referenced datasets, please ensure that you have the required rights
+and your usage adheres to the respective license terms.
