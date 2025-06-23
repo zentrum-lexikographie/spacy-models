@@ -2,6 +2,8 @@
 
 _German spaCy models trained on German UD-HDT and on a collection of gold and silver standard NER corpora_
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15721442.svg)](https://doi.org/10.5281/zenodo.15721442)
+
 This project trains a part-of-speech tagger, morphologizer,
 lemmatizer, dependency parser and NER tagger from the German UD-HDT
 and a collection of German NER datasets. It takes care of
@@ -14,9 +16,24 @@ and a collection of German NER datasets. It takes care of
 Note that multi-word tokens will be merged together when the corpus is
 converted since spaCy does not support multi-word token expansion.
 
-## Installation
+## Usage
 
-Initialize/update environment:
+Install project:
+
+``` shell
+pip install git+https://github.com/zentrum-lexikographie/spacy-models.git@v2.2.0
+```
+
+Then:
+
+``` python
+>>> import zdl_spacy
+>>> nlp = zdl_spacy.load()
+>>> [(e, e.label_) for e in nlp("Heiner Müller wurde am 9. Januar 1929 in Eppendorf in Sachsen geboren.").ents]
+[(Heiner Müller, 'PER'), (Eppendorf, 'LOC'), (Sachsen, 'LOC')]
+```
+
+## Training
 
 ``` shell
 pip install -U pip pip-tools setuptools
@@ -34,13 +51,13 @@ For development:
 pip install -e .[dev]
 ```
 
-## Training
+Train models:
 
 ``` shell
 GPU_ID=0 spacy-models-build
 ```
 
-Including release to ZDL-hosted repository:
+Train and release to ZDL-hosted repository:
 
 ``` shell
 ZDL_RELEASE=1 TWINE_USERNAME=… TWINE_PASSWORD=… GPU_ID=0\
