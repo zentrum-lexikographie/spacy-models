@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 from shutil import rmtree
+from subprocess import check_call
 
 import spacy
 from spacy.cli.download import download
@@ -12,13 +13,12 @@ from spacy.cli.package import package
 from spacy.cli.train import train
 from spacy.tokens import DocBin
 from spacy.training.converters import conll_ner_to_docs, conllu_to_docs
-from spacy_huggingface_hub import push
 from wasabi import msg
 
 from .util import read_zip
 from .version import __version__
 
-is_hf_push = os.environ.get("HF_PUSH", "")
+is_release = os.environ.get("ZDL_RELEASE", "")
 gpu_id = int(os.environ.get("GPU_ID", "-1"))
 
 project_dir = Path(__file__).parent.parent
@@ -122,17 +122,25 @@ def train_models():
             )
 
 
-def hf_push():
-    if is_hf_push:
+def release():
+    if is_release:
         for whl in packages_dir.rglob("*.whl"):
-            push(whl.as_posix(), namespace="zentrum-lexikographie")
+            check_call(
+                (
+                    "twine",
+                    "upload",
+                    "--repository-url",
+                    "https://repo.zdl.org/repository/pypi/",
+                    whl.as_posix(),
+                )
+            )
 
 
 def main():
     prepare_hdt()
     prepare_ner_d()
     train_models()
-    hf_push()
+    release()
 
 
 if __name__ == "__main__":

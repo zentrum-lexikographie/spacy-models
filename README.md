@@ -40,10 +40,11 @@ pip install -e .[dev]
 GPU_ID=0 spacy-models-build
 ```
 
-Including release to HuggingFace:
+Including release to ZDL-hosted repository:
 
 ``` shell
-HF_PUSH=1 GPU_ID=0 spacy-models-build
+ZDL_RELEASE=1 TWINE_USERNAME=… TWINE_PASSWORD=… GPU_ID=0\
+    spacy-models-build
 ```
 
 ## Updating NER dataset

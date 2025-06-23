@@ -1,5 +1,4 @@
 build
 jsonstream
 spacy[transformers,cuda12x]
-spacy-huggingface-hub
 wasabi
