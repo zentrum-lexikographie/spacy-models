@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spacy-models"
-description = "German spaCy models trained on German UD-HDT and on a collection of gold and silver standard NER corpora."
+description = "German spaCy models trained on German UD-HDT and on a collection of gold and silver standard NER corpora"
 authors = [
     {name = "René Knaebel", email = "rknaebel@uni-potsdam.de"},
     {name = "Luise Köhler", email = "luise.koehler@bbaw.de"},
@@ -12,7 +12,7 @@ authors = [
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
-    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python :: 3",
     "Topic :: Text Processing :: Linguistic",
 ]

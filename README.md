@@ -1,6 +1,6 @@
 # spacy-models
 
-_German spaCy models trained on German UD-HDT and a collection of German NER datasets_
+_German spaCy models trained on German UD-HDT and on a collection of gold and silver standard NER corpora_
 
 This project trains a part-of-speech tagger, morphologizer,
 lemmatizer, dependency parser and NER tagger from the German UD-HDT
