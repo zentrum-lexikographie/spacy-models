@@ -4,11 +4,14 @@ import subprocess
 import spacy
 import thinc.api
 
+__version__ = "2.0.0"  # FIXME: align with releases (zdl_spacy.version.__version__)
+
 
 def model_package_spec(model):
+    package = model.replace("_", "-")
     return (
-        f"{model} @ https://huggingface.co/zentrum-lexikographie/{model}/"
-        f"resolve/main/{model}-any-py3-none-any.whl"
+        f"{model} @ https://repo.zdl.org/repository/pypi/packages/"
+        f"{package}/{__version__}/{model}-{__version__}-py3-none-any.whl"
     )
 
 
