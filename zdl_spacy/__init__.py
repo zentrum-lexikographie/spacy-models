@@ -3,7 +3,8 @@ import subprocess
 
 import spacy
 import thinc.api
-from zdl.spacy.version import __version__
+
+from .version import __version__
 
 
 def model_package_spec(model):
