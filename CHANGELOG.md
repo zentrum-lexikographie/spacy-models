@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.0](https://github.com/zentrum-lexikographie/spacy-models/compare/v2.1.0...v2.2.0) (2025-06-23)
+
+
+### Features
+
+* Align downloaded model versions with project's version ([9480aba](https://github.com/zentrum-lexikographie/spacy-models/commit/9480aba429c02289dae913a0fd77f675c748bf34))
+* Pull model packages from ZDL-hosted repository ([0f1383f](https://github.com/zentrum-lexikographie/spacy-models/commit/0f1383f2f407bfcfedc3b7c48cf59b77cf9fc42f))
+* Release model packages to ZDL-hosted repository ([c78b62b](https://github.com/zentrum-lexikographie/spacy-models/commit/c78b62b454e72af3500508097ea872ec62abff9c))
+
+
+### Bug Fixes
+
+* Add Luise's ORCID ([83acf44](https://github.com/zentrum-lexikographie/spacy-models/commit/83acf4454edb10fdcc3d523c94f57d4943fd0198))
+
 ## [2.1.0](https://github.com/zentrum-lexikographie/spacy-models/compare/v2.0.0...v2.1.0) (2025-06-22)
 
 
