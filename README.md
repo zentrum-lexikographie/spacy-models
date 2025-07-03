@@ -21,7 +21,7 @@ converted since spaCy does not support multi-word token expansion.
 Install project:
 
 ``` shell
-pip install git+https://github.com/zentrum-lexikographie/spacy-models.git@v2.2.0
+pip install git+https://github.com/zentrum-lexikographie/spacy-models.git@v2.2.1
 ```
 
 Then:
