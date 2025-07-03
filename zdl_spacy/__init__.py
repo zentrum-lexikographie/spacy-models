@@ -1,4 +1,5 @@
 import logging
+import re
 import subprocess
 
 import spacy
@@ -6,12 +7,16 @@ import thinc.api
 
 from .version import __version__
 
+#  Align model versions with latest minor version of the package, so
+#  updates are not required for patch releases
+model_version = re.sub(r"\.[0-9]+$", ".0", __version__)
+
 
 def model_package_spec(model):
     package = model.replace("_", "-")
     return (
         f"{model} @ https://repo.zdl.org/repository/pypi/packages/"
-        f"{package}/{__version__}/{model}-{__version__}-py3-none-any.whl"
+        f"{package}/{model_version}/{model}-{model_version}-py3-none-any.whl"
     )
 
 
