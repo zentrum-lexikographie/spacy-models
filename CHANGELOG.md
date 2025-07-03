@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.2](https://github.com/zentrum-lexikographie/spacy-models/compare/v2.2.1...v2.2.2) (2025-07-03)
+
+
+### Bug Fixes
+
+* Update all versions in citation files ([291b5aa](https://github.com/zentrum-lexikographie/spacy-models/commit/291b5aaf1e7151997477e32d3a9a8ac80c443eb3))
+
 ## [2.2.1](https://github.com/zentrum-lexikographie/spacy-models/compare/v2.2.0...v2.2.1) (2025-07-03)
 
 
