@@ -2,7 +2,7 @@
 
 _German spaCy models trained on German UD-HDT and on a collection of gold and silver standard NER corpora_
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15721442.svg)](https://doi.org/10.5281/zenodo.15721442)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15721441.svg)](https://doi.org/10.5281/zenodo.15721441)
 
 This project trains a part-of-speech tagger, morphologizer,
 lemmatizer, dependency parser and NER tagger from the German UD-HDT
