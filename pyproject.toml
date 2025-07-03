@@ -17,7 +17,24 @@ classifiers = [
     "Topic :: Text Processing :: Linguistic",
 ]
 requires-python = ">=3.12"
-dynamic = ["readme", "version", "dependencies", "optional-dependencies"]
+dynamic = ["readme", "version"]
+dependencies = [
+    "build",
+    "jsonstream",
+    "spacy[transformers,cuda12x]==3.8.7",
+    "wasabi"
+]
+
+[project.optional-dependencies]
+dev = [
+    "flake8",
+    "flake8-bugbear",
+    "isort",
+    "mypy",
+    "pre-commit",
+    "pytest",
+    "twine",
+]
 
 [project.scripts]
 spacy-models-build = "zdl_spacy.build:main"
@@ -38,8 +55,6 @@ testpaths = ["tests"]
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"], content-type = "text/markdown"}
 version = {attr = "zdl_spacy.version.__version__"}
-dependencies = { file = ["requirements.txt"] }
-optional-dependencies.dev = { file = ["requirements.dev.txt"] }
 
 [tool.setuptools.packages.find]
 where = ["."]

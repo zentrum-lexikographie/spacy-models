@@ -1,4 +1,0 @@
-build
-jsonstream
-spacy[transformers,cuda12x]
-wasabi
