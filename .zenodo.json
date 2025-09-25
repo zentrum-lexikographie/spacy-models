@@ -27,5 +27,5 @@
     "id": "GPL-3.0"
   },
   "title": "German spaCy models trained on German UD-HDT and a collection of German NER datasets",
-  "version": "2.2.2"
+  "version": "2.3.0"
 }
