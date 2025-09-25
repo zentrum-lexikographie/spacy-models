@@ -20,8 +20,9 @@ requires-python = ">=3.12"
 dynamic = ["readme", "version"]
 dependencies = [
     "build",
+    "cupy-cuda12x",
     "jsonstream",
-    "spacy[transformers,cuda12x]==3.8.7",
+    "spacy[transformers]",
     "wasabi"
 ]
 
