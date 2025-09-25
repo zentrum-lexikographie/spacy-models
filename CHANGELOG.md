@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/zentrum-lexikographie/spacy-models/compare/v2.2.2...v2.3.0) (2025-09-25)
+
+
+### Features
+
+* Compatibility with Python v3.13 ([a3bfa61](https://github.com/zentrum-lexikographie/spacy-models/commit/a3bfa61d0a0d9bb478522e442f06514cd16f13dc))
+
+
+### Bug Fixes
+
+* Update version references ([bf2ed7a](https://github.com/zentrum-lexikographie/spacy-models/commit/bf2ed7aad1c7a64f72f5ad19c3f212348d94e185))
+
 ## [2.2.2](https://github.com/zentrum-lexikographie/spacy-models/compare/v2.2.1...v2.2.2) (2025-07-03)
 
 
