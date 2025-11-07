@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/zentrum-lexikographie/spacy-models/compare/v2.3.0...v3.0.0) (2025-11-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* Build integrated pipelines with custom NER and lemmatizer components
+
+### Features
+
+* Build integrated pipelines with custom NER and lemmatizer components ([9db0d8f](https://github.com/zentrum-lexikographie/spacy-models/commit/9db0d8f3472119b342d911ab11e9f537cfd6646e))
+
 ## [2.3.0](https://github.com/zentrum-lexikographie/spacy-models/compare/v2.2.2...v2.3.0) (2025-09-25)
 
 
