@@ -21,14 +21,14 @@ converted since spaCy does not support multi-word token expansion.
 Install project:
 
 ``` shell
-pip install git+https://github.com/zentrum-lexikographie/spacy-models.git@v2.3.0
+pip install 'de_zdl_lg @ https://repo.zdl.org/repository/pypi/packages/de-zdl-lg/3.0.0/de_zdl_lg-3.0.0-py3-none-any.whl'
 ```
 
 Then:
 
 ``` python
->>> import zdl_spacy
->>> nlp = zdl_spacy.load()
+>>> import spacy
+>>> nlp = spacy.load("de_zdl_lg")
 >>> [(e, e.label_) for e in nlp("Heiner Müller wurde am 9. Januar 1929 in Eppendorf in Sachsen geboren.").ents]
 [(Heiner Müller, 'PER'), (Eppendorf, 'LOC'), (Sachsen, 'LOC')]
 ```
@@ -48,26 +48,25 @@ pip install -e .
 For development:
 
 ```shell
-pip install -e .[dev]
+pip install -e .[datasets,dev]
 ```
 
 Train models:
 
 ``` shell
-GPU_ID=0 spacy-models-build
+spacy-models-build
 ```
 
 Train and release to ZDL-hosted repository:
 
 ``` shell
-ZDL_RELEASE=1 TWINE_USERNAME=… TWINE_PASSWORD=… GPU_ID=0\
-    spacy-models-build
+ZDL_RELEASE=1 TWINE_USERNAME=… TWINE_PASSWORD=… spacy-models-build
 ```
 
 ## Updating NER dataset
 
 ``` shell
-spacy-models-dataset
+spacy-models-ner-dataset
 ```
 
 ## Datasets

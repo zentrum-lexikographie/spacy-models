@@ -22,11 +22,16 @@ dependencies = [
     "build",
     "cupy-cuda12x",
     "jsonstream",
-    "spacy[transformers]",
-    "wasabi"
+    "spacy[transformers]"
 ]
 
 [project.optional-dependencies]
+datasets = [
+    "de_zdl_lg @ https://repo.zdl.org/repository/pypi/packages/de-zdl-lg/3.0.0/de_zdl_lg-3.0.0-py3-none-any.whl",
+    "dwdsmor",
+    "lxml",
+    "tqdm",
+]
 dev = [
     "flake8",
     "flake8-bugbear",
@@ -38,8 +43,9 @@ dev = [
 ]
 
 [project.scripts]
-spacy-models-build = "zdl_spacy.build:main"
-spacy-models-dataset = "zdl_spacy.dataset:main"
+spacy-models-build = "spacy_models.build:main"
+spacy-models-lemma-dataset = "spacy_models.datasets.lemmatizer:main"
+spacy-models-ner-dataset = "spacy_models.datasets.ner:main"
 
 [project.urls]
 Homepage = "https://github.com/zentrum-lexikographie/spacy-models"
@@ -55,7 +61,7 @@ testpaths = ["tests"]
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"], content-type = "text/markdown"}
-version = {attr = "zdl_spacy.version.__version__"}
+version = {attr = "spacy_models.version.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["."]
