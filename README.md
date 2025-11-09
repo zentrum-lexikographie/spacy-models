@@ -21,7 +21,7 @@ converted since spaCy does not support multi-word token expansion.
 Install project:
 
 ``` shell
-pip install 'de_zdl_lg @ https://repo.zdl.org/repository/pypi/packages/de-zdl-lg/3.0.0/de_zdl_lg-3.0.0-py3-none-any.whl'
+pip install 'de_zdl_lg @ https://repo.zdl.org/repository/pypi/packages/de-zdl-lg/3.1.0/de_zdl_lg-3.1.0-py3-none-any.whl'
 ```
 
 Then:
