@@ -1,6 +1,6 @@
 cff-version: "1.2.0"
 title: "German spaCy models trained on German UD-HDT and a collection of German NER datasets"
-version: 2.3.0
+version: 3.1.0
 license: "GPL-3.0"
 type: software
 abstract: "A part-of-speech tagger, morphologizer, lemmatizer, dependency parser and NER tagger trained on the German UD-HDT and a collection of German NER datasets"
