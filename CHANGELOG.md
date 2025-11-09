@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.1.0](https://github.com/zentrum-lexikographie/spacy-models/compare/v3.0.0...v3.1.0) (2025-11-09)
+
+
+### Features
+
+* base GPU-optimized lemmatizer on transformer embeddings ([be57bd1](https://github.com/zentrum-lexikographie/spacy-models/commit/be57bd1e00f121b292a6199df4ef54b79c174162))
+
+
+### Bug Fixes
+
+* prepare release ([ca20678](https://github.com/zentrum-lexikographie/spacy-models/commit/ca206784038c1b0a81d5a09f73662e512f62d169))
+
 ## [3.0.0](https://github.com/zentrum-lexikographie/spacy-models/compare/v2.3.0...v3.0.0) (2025-11-07)
 
 
