@@ -109,9 +109,16 @@ def configure_base(gpu, component_names, base_model):
 
 def configure_lemmatizer(gpu, component_names, base_model):
     nlp = spacy.load(base_model)
-    nlp.remove_pipe("trainable_lemmatizer")
-    nlp.add_pipe("trainable_lemmatizer")
+
+    if not gpu:
+        # retrain lemmatizer with CPU-optimized defaults
+        nlp.remove_pipe("trainable_lemmatizer")
+        nlp.add_pipe("trainable_lemmatizer")
+
     config = nlp.config.copy()
+
+    if gpu:
+        config["training"]["annotating_components"] = ["transformer"]
 
     components = config["components"]
     frozen = config["training"]["frozen_components"] = []
@@ -119,6 +126,14 @@ def configure_lemmatizer(gpu, component_names, base_model):
         if c != "trainable_lemmatizer":
             components[c] = {"source": base_model}
             frozen.append(c)
+
+    # TODO
+    # https://github.com/jmyerston/greCy/blob/main/configs/lemmatizer_trf.cfg
+    #
+    # lemmatizer = components["trainable_lemmatizer"]
+    # lemmatizer["min_tree_freq"] = 1
+    # lemmatizer["top_k"] = 7
+    # lemmatizer["overwrite"] = True
 
     score_weights = config["training"]["score_weights"] = {}
     score_weights["lemma_acc"] = 1.0
@@ -170,8 +185,6 @@ training_stages = [
 
 
 def train_models():
-    install_base_model()
-    clean_output_dirs()
     for gpu in (True, False):
         component_names = pipeline.copy()
         component_names.insert(0, "transformer" if gpu else "tok2vec")
@@ -179,6 +192,12 @@ def train_models():
         model = None
         for stage in training_stages:
             id = ".".join(("gpu" if gpu else "cpu", stage.corpus))
+            cfg_path = configs_dir / f"{id}.cfg"
+            training_path = training_dir / id
+            result_path = training_path / "model-best"
+            if result_path.is_dir():
+                model = str(result_path)
+                continue
 
             config = stage.configure(gpu, component_names, model)
             config["paths"]["train"] = f"dataset/{stage.corpus}.train.spacy"
@@ -190,13 +209,9 @@ def train_models():
                     "vocab": model,
                 }
 
-            cfg_file = configs_dir / f"{id}.cfg"
-            config.to_disk(cfg_file)
-
-            training_path = training_dir / id
-            train(cfg_file, training_path, use_gpu=gpu_id)
-
-            model = str(training_path / "model-best")
+            config.to_disk(cfg_path)
+            train(cfg_path, training_path, use_gpu=gpu_id)
+            model = str(result_path)
 
         perf = None
         for stage in training_stages:
@@ -243,6 +258,8 @@ def release():
 def main():
     prepare_hdt()
     prepare_ner_d()
+    install_base_model()
+    clean_output_dirs()
     train_models()
     release()
 

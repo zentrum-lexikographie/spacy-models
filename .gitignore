@@ -5,8 +5,10 @@ __pycache__/
 
 *.egg-info
 *.temp
+*.log
 
 build/
+configs/
 dataset/*.spacy
 configs/filled/
 training/
