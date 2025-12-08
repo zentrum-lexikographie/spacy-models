@@ -1,0 +1,6 @@
+*
+
+!dataset/
+!pyproject.toml
+!requirements.txt
+!spacy_models/

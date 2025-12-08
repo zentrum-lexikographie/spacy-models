@@ -1,9 +1,6 @@
-import bz2
 import json
-import os
 from collections import namedtuple
 from pathlib import Path
-from shutil import rmtree
 from subprocess import check_call
 
 import spacy
@@ -12,63 +9,19 @@ from spacy.cli.evaluate import evaluate
 from spacy.cli.init_config import init_config
 from spacy.cli.package import package
 from spacy.cli.train import train
-from spacy.tokens import DocBin
-from spacy.training.converters import conll_ner_to_docs, conllu_to_docs
 
-from .util import read_zip
-from .version import __version__
+import spacy_models.datasets.dwdswb
+import spacy_models.datasets.hdt
+import spacy_models.datasets.ner_d
 
-is_release = os.environ.get("ZDL_RELEASE", "")
-gpu_id = int(os.environ.get("GPU_ID", "0"))
+from .env import dataset_dir, gpu_id, max_steps, project_dir, repo_url, version
 
-project_dir = Path(__file__).parent.parent
-dataset_dir = project_dir / "dataset"
 configs_dir = project_dir / "configs"
 training_dir = project_dir / "training"
 packages_dir = project_dir / "packages"
 
-
-def prepare_hdt():
-    url = (
-        "https://codeload.github.com/UniversalDependencies/UD_German-HDT/"
-        "zip/refs/tags/r2.16"
-    )
-
-    def read_docs(zf, name):
-        with zf.open(name) as f:
-            return conllu_to_docs(
-                f.read().decode("utf-8"),
-                n_sents=32,
-                merge_subtokens=True,
-                no_print=True,
-            )
-
-    def extract(zf):
-        path_prefix = "UD_German-HDT-r2.16/de_hdt-ud-"
-        docs = [
-            d
-            for p1 in ("a", "b")
-            for p2 in ("1", "2")
-            for d in read_docs(zf, f"{path_prefix}train-{p1}-{p2}.conllu")
-        ]
-        data = DocBin(docs=docs, store_user_data=True).to_bytes()
-        (dataset_dir / "hdt.train.spacy").write_bytes(data)
-
-        for split in ("dev", "test"):
-            docs = read_docs(zf, f"{path_prefix}{split}.conllu")
-            data = DocBin(docs=docs, store_user_data=True).to_bytes()
-            (dataset_dir / f"hdt.{split}.spacy").write_bytes(data)
-
-    read_zip(url, extract)
-
-
-def prepare_ner_d():
-    for split in ("train", "dev", "test"):
-        file_name = f"ner-d.{split}.tsv.bz2"
-        with bz2.open(dataset_dir / file_name, "rt", encoding="utf-8") as f:
-            docs = conll_ner_to_docs(f.read(), n_sents=32, no_print=True)
-            data = DocBin(docs=docs, store_user_data=True).to_bytes()
-            (dataset_dir / f"ner-d.{split}.spacy").write_bytes(data)
+for d in (configs_dir, training_dir, packages_dir):
+    d.mkdir(parents=True, exist_ok=True)
 
 
 def install_base_model():
@@ -78,17 +31,12 @@ def install_base_model():
         download("de_core_news_lg")
 
 
-def clean_output_dirs():
-    for d in (configs_dir, training_dir, packages_dir):
-        if d.is_dir():
-            rmtree(d)
-        d.mkdir(parents=True, exist_ok=True)
-
-
 pipeline = ["tagger", "morphologizer", "parser", "ner", "trainable_lemmatizer"]
 
 
 def configure_base(gpu, component_names, base_model):
+    spacy_models.datasets.hdt.prepare()
+
     config = init_config(lang="de", pipeline=pipeline, optimize="accuracy", gpu=gpu)
 
     # fill config
@@ -109,6 +57,7 @@ def configure_base(gpu, component_names, base_model):
 
 def configure_lemmatizer(gpu, component_names, base_model):
     nlp = spacy.load(base_model)
+    spacy_models.datasets.dwdswb.prepare(nlp)
 
     if not gpu:
         # retrain lemmatizer with CPU-optimized defaults
@@ -142,6 +91,8 @@ def configure_lemmatizer(gpu, component_names, base_model):
 
 
 def configure_ner(gpu, component_names, base_model):
+    spacy_models.datasets.ner_d.prepare()
+
     config = spacy.load(base_model).config.copy()
 
     components = config["components"]
@@ -194,14 +145,15 @@ def train_models():
             id = ".".join(("gpu" if gpu else "cpu", stage.corpus))
             cfg_path = configs_dir / f"{id}.cfg"
             training_path = training_dir / id
-            result_path = training_path / "model-best"
-            if result_path.is_dir():
-                model = str(result_path)
+            model_path = training_path / "model-best"
+            if model_path.is_dir():
+                model = str(model_path)
                 continue
 
             config = stage.configure(gpu, component_names, model)
             config["paths"]["train"] = f"dataset/{stage.corpus}.train.spacy"
             config["paths"]["dev"] = f"dataset/{stage.corpus}.dev.spacy"
+            config["training"]["max_steps"] = max_steps
             if model:
                 config["initialize"]["before_init"] = {
                     "@callbacks": "spacy.copy_from_base_model.v1",
@@ -211,7 +163,7 @@ def train_models():
 
             config.to_disk(cfg_path)
             train(cfg_path, training_path, use_gpu=gpu_id)
-            model = str(result_path)
+            model = str(model_path)
 
         perf = None
         for stage in training_stages:
@@ -233,7 +185,7 @@ def train_models():
             Path(model),
             packages_dir,
             name=("zdl_" + ("dist" if gpu else "lg")),
-            version=__version__,
+            version=version,
             create_wheel=True,
             create_sdist=False,
             force=True,
@@ -242,24 +194,14 @@ def train_models():
 
 
 def release():
-    if is_release:
-        for whl in packages_dir.rglob("*.whl"):
-            check_call(
-                (
-                    "twine",
-                    "upload",
-                    "--repository-url",
-                    "https://repo.zdl.org/repository/pypi/",
-                    whl.as_posix(),
-                )
-            )
+    assert repo_url, "No repo url given"
+    for whl in packages_dir.rglob("*.whl"):
+        whl = whl.as_posix()
+        check_call(("twine", "upload", "--repository-url", repo_url, whl))
 
 
 def main():
-    prepare_hdt()
-    prepare_ner_d()
     install_base_model()
-    clean_output_dirs()
     train_models()
     release()
 

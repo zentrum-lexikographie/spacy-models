@@ -4,12 +4,14 @@ import random
 import re
 from collections import Counter
 from io import TextIOWrapper
-from pathlib import Path
 from urllib.request import urlopen
 
 import jsonstream
+from spacy.tokens import DocBin
+from spacy.training.converters import conll_ner_to_docs
 
-from .util import read_tgz, read_zip
+from ..env import dataset_dir
+from ..util import read_tgz, read_zip
 
 
 def tag_mapping(mapping, pattern="(%s)"):
@@ -387,15 +389,11 @@ def wikiner(write, n_ner_sentences):
             write_("wikiner", "test", sentence)
 
 
-project_dir = Path(__file__).parent.parent
-dataset_dir = project_dir / "dataset"
-
-
 def open_ner_split(split):
     return bz2.open(dataset_dir / f"ner-d.{split}.tsv.bz2", "wt", encoding="utf-8")
 
 
-def main():
+def convert():
     dataset_dir.mkdir(parents=True, exist_ok=True)
     ner_splits = {k: open_ner_split(k) for k in ("train", "dev", "test")}
     ner_splits_n = Counter()
@@ -426,5 +424,14 @@ def main():
         f.close()
 
 
+def prepare():
+    for split in ("train", "dev", "test"):
+        file_name = f"ner-d.{split}.tsv.bz2"
+        with bz2.open(dataset_dir / file_name, "rt", encoding="utf-8") as f:
+            docs = conll_ner_to_docs(f.read(), n_sents=32, no_print=True)
+            data = DocBin(docs=docs, store_user_data=True).to_bytes()
+            (dataset_dir / f"ner-d.{split}.spacy").write_bytes(data)
+
+
 if __name__ == "__main__":
-    main()
+    convert()

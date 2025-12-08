@@ -1,18 +1,38 @@
-import argparse
+import gzip
+import os
 import re
+from functools import cache
 from itertools import islice
-from pathlib import Path
 from random import shuffle
 
 import dwdsmor
 import dwdsmor.tag.hdt
 import lxml.etree as ET
+import requests
 import spacy
 import spacy.tokens
 import spacy.vocab
-from tqdm import tqdm
+
+from ..env import dataset_dir
+
+dataset_file = dataset_dir / "dwdswb.xml.gz"
 
 
+def download_dataset():
+    if dataset_file.is_file():
+        return
+    dataset_url = os.environ.get("DWDSWB_DATASET_URL")
+    ci_job_token = os.environ.get("CI_JOB_TOKEN")
+    assert dataset_url, "No $DWDSWB_DATASET_URL given"
+    assert ci_job_token, "No $CI_JOB_TOKEN given"
+    r = requests.get(dataset_url, headers={"JOB-TOKEN": ci_job_token}, stream=True)
+    r.raise_for_status()
+    with dataset_file.open("wb") as f:
+        for c in r.iter_content(chunk_size=8192):
+            f.write(c)
+
+
+@cache
 def qn(tag):
     return "{http://www.dwds.de/ns/1.0}" + tag
 
@@ -31,21 +51,12 @@ def tree_text(tree):
     return text
 
 
-def wb_examples(wb_xml_file):
-    doc = ET.parse(wb_xml_file)
-    return (tree_text(e) for e in doc.iter(qn("Belegtext")))
-
-
-def extract_wb_examples(wb_dir):
-    wb_xml_files = [str(f) for f in wb_dir.rglob("*.xml")]
-    shuffle(wb_xml_files)
-    for wb_xml_file in wb_xml_files:
-        for sentence in wb_examples(wb_xml_file):
-            yield sentence
-
-
-def annotate_examples(examples):
-    return spacy.load("de_zdl_lg").pipe(examples)
+def extract_wb_examples():
+    with gzip.open(dataset_file, "rb") as f:
+        doc = ET.parse(f)
+        examples = list(doc.iter(qn("Belegtext")))
+        shuffle(examples)
+        return (tree_text(e) for e in examples)
 
 
 def valid_analysis(a):
@@ -114,7 +125,7 @@ def lemmatize_examples(examples):
             yield example
 
 
-def trim_spacy_doc(vocab, doc):
+def condense_spacy_doc(vocab, doc):
     return spacy.tokens.Doc(
         vocab=vocab,
         words=[t.text for t in doc],
@@ -123,65 +134,29 @@ def trim_spacy_doc(vocab, doc):
     )
 
 
-def trim_spacy_docs(docs):
-    vocab = spacy.vocab.Vocab()
-    return tuple(trim_spacy_doc(vocab, d) for d in docs)
+def prepare(nlp):
+    nlp.add_pipe("doc_cleaner")
 
-
-arg_parser = argparse.ArgumentParser(description="Create Lemmatizer training dataset")
-arg_parser.add_argument(
-    "-d",
-    "--dwdswb-dir",
-    help="directory with DWDS-WB sources",
-    type=Path,
-    required=True,
-)
-arg_parser.add_argument(
-    "-n",
-    "--num-examples",
-    help="number of example sentences to extract",
-    type=int,
-    default="1000000",
-)
-arg_parser.add_argument(
-    "-o",
-    "--output-dir",
-    help="output directory with training dataset in spaCy format",
-    type=Path,
-    required=True,
-)
-
-
-def main():
-    args = arg_parser.parse_args()
-    examples = extract_wb_examples(args.dwdswb_dir)
-    examples = annotate_examples(examples)
+    download_dataset()
+    examples = extract_wb_examples()
+    examples = nlp.pipe(examples)
     examples = lemmatize_examples(examples)
 
-    output_dir = args.output_dir
-    assert not output_dir.is_dir()
-    output_dir.mkdir(parents=True, exist_ok=True)
-
+    num_examples = 1000000
     train, dev, test = [], [], []
 
-    total = args.num_examples
-    progress = tqdm(
-        desc="Extracting",
-        unit=" sentences",
-        unit_scale=True,
-        smoothing=0.01,
-        total=total,
-    )
-    for ei, example in enumerate(islice(examples, total), 0):
+    for ei, example in enumerate(islice(examples, num_examples), 0):
         bm = ei % 10
         bucket = train if bm < 8 else dev if bm < 9 else test
         bucket.append(example)
-        progress.update(1)
     for split, docs in zip(("train", "dev", "test"), (train, dev, test)):
-        docs = trim_spacy_docs(docs)
+        vocab = spacy.vocab.Vocab()
+        docs = tuple(condense_spacy_doc(vocab, d) for d in docs)
         doc_bin = spacy.tokens.DocBin(docs=docs, store_user_data=True)
-        (output_dir / f"dwdswb.{split}.spacy").write_bytes(doc_bin.to_bytes())
+        (dataset_dir / f"dwdswb.{split}.spacy").write_bytes(doc_bin.to_bytes())
+
+    nlp.remove_pipe("doc_cleaner")
 
 
 if __name__ == "__main__":
-    main()
+    download_dataset()

@@ -66,7 +66,7 @@ ZDL_RELEASE=1 TWINE_USERNAME=… TWINE_PASSWORD=… spacy-models-build
 ## Updating NER dataset
 
 ``` shell
-spacy-models-ner-dataset
+python -m spacy_models.datasets.ner_d
 ```
 
 ## Datasets
