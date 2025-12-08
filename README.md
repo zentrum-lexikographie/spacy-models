@@ -1,6 +1,6 @@
 # spacy-models
 
-_German spaCy models trained on German UD-HDT and on a collection of gold and silver standard NER corpora_
+_German spaCy models trained on UD-HDT and custom datasets for NER and lemmatization_
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15721441.svg)](https://doi.org/10.5281/zenodo.15721441)
 
