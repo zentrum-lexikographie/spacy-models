@@ -4,75 +4,77 @@ _German spaCy models trained on UD-HDT and custom datasets for NER and lemmatiza
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15721441.svg)](https://doi.org/10.5281/zenodo.15721441)
 
-This project trains a part-of-speech tagger, morphologizer,
-lemmatizer, dependency parser and NER tagger from the German UD-HDT
-and a collection of German NER datasets. It takes care of
+This project trains a [spaCy](https://spacy.io/) pipeline with two
+models, geared towards the **annotation of German texts for
+lexicographic use cases** at the [Zentrum für digitale Lexikographie
+der deutschen Sprache](https://www.zdl.org/). The pipeline comprises a
+part-of-speech tagger, morphologizer, lemmatizer, syntactic dependency
+parser and NER tagger. The notable differences in comparison to
+spaCy's default pipeline for German are:
 
-1. data preparation,
-1. converting it to spaCy's format,
-1. training separate models optimized for CPU as well as GPU architectures, and
-1. evaluating the trained models.
+1. The tagger and dependency parser are trained on data from the
+   [Hamburg Dependency Treebank](https://aclanthology.org/L14-1666/)
+   (HDT). Its tagset, rather than the one from the TIGER corpus, is
+   more amenable to ZDL-specific downstream tasks like collocation
+   extraction.
+1. The NER tagger is trained on an aggregated custom dataset of
+   several gold and silver standards (see below for
+   details). Moreover, it is an integral part of the pipeline for CPU
+   and GPU architectures because recognizing named entities in
+   examined textual evidence is a central capability in the context of
+   lexicography.
+1. As the same applies to the lemmatization of word forms, we train
+   spaCy's probabilistic lemmatizer on a large dataset of example
+   sentences from ZDL's own lexical resources. These sentences have
+   been lemmatized with the deterministic lemmatizer
+   [DWDSmor](https://github.com/zentrum-lexikographie/dwdsmor) and
+   therefore adhere to the expected conventions of the ZDL.
 
-Note that multi-word tokens will be merged together when the corpus is
-converted since spaCy does not support multi-word token expansion.
+Evaluated against test splits of the aforementioned datasets, the two
+models trained perform as follows:
+
+| Annotation Type           | Accuracy (static emb.) | Accuracy (contextual emb.) |
+|:--------------------------|-----------------------:|---------------------------:|
+| PoS Tagging               |                 97.69% |                     98.45% |
+| Morphological Features    |                 91.33% |                     93.97% |
+| Syntactic Relations (LAS) |                 92.45% |                     95.52% |
+| Syntactic Relations (UAS) |                 94.69% |                     96.77% |
+| Lemmatization             |                 98.62% |                     98.64% |
+| Named Entities (f-score)  |                 75.19% |                     87.71% |
+
+One model is trained on static embeddings and should provide higher
+throughput on CPU architectures, while the other is trained on
+contextual embeddings provided by a transformer base model and should
+provide higher accuracy but require GPU hardware for annotating larger
+corpora.
 
 ## Usage
 
-Install project:
+The models are available from our package registry at [Git.UP](https://gitup.uni-potsdam.de/):
 
 ``` shell
-pip install 'de_zdl_lg @ https://repo.zdl.org/repository/pypi/packages/de-zdl-lg/3.1.0/de_zdl_lg-3.1.0-py3-none-any.whl'
+pip install de-zdl-lg --index-url https://gitup.uni-potsdam.de/api/v4/projects/21461/packages/pypi/simple
+pip install de-zdl-dist --index-url https://gitup.uni-potsdam.de/api/v4/projects/21461/packages/pypi/simple
 ```
 
-Then:
+The first package (with suffix `-lg`) contains the model with static
+word embeddings, the second (with suffix `-dist`) provides the model
+based on [DistilBERT](https://arxiv.org/abs/1910.01108).
+
+Once installed, you can use the pipelines like any other spaCy pipeline, e.g.
 
 ``` python
 >>> import spacy
->>> nlp = spacy.load("de_zdl_lg")
+>>> nlp = spacy.load("de_zdl_lg") # or "de_zdl_dist"
 >>> [(e, e.label_) for e in nlp("Heiner Müller wurde am 9. Januar 1929 in Eppendorf in Sachsen geboren.").ents]
 [(Heiner Müller, 'PER'), (Eppendorf, 'LOC'), (Sachsen, 'LOC')]
 ```
 
-## Training
-
-``` shell
-pip install -U pip pip-tools setuptools
-```
-
-For training on a GPU system (recommended):
-
-```shell
-pip install -e .
-```
-
-For development:
-
-```shell
-pip install -e .[datasets,dev]
-```
-
-Train models:
-
-``` shell
-spacy-models-build
-```
-
-Train and release to ZDL-hosted repository:
-
-``` shell
-ZDL_RELEASE=1 TWINE_USERNAME=… TWINE_PASSWORD=… spacy-models-build
-```
-
-## Updating NER dataset
-
-``` shell
-python -m spacy_models.datasets.ner_d
-```
-
-## Datasets
+## Training Datasets
 
 
 * Benikova, Darina, Chris Biemann, und Marc Reznicek. „NoSta-D Named Entity Annotation for German: Guidelines and Dataset“. In Proceedings of the Ninth International Conference on Language Resources and Evaluation (LREC’14), herausgegeben von Nicoletta Calzolari, Khalid Choukri, Thierry Declerck, Hrafn Loftsson, Bente Maegaard, Joseph Mariani, Asuncion Moreno, Jan Odijk, und Stelios Piperidis, 2524–31. Reykjavik, Iceland: European Language Resources Association (ELRA), 2014. https://aclanthology.org/L14-1251/.
+* Berlin-Brandenburg Academy of Sciences and Humanities (BBAW) (ed.) (n.d.). DWDS – Digitales Wörterbuch der deutschen Sprache: Das Wortauskunftssystem zur deutschen Sprache in Geschichte und Gegenwart. https://www.dwds.de/
 * Borges Völker, Emanuel, Maximilian Wendt, Felix Hennig, und Arne Köhn. „HDT-UD: A very large Universal Dependencies Treebank for German“. In Proceedings of the Third Workshop on Universal Dependencies (UDW, SyntaxFest 2019), herausgegeben von Alexandre Rademaker und Francis Tyers, 46–57. Paris, France: Association for Computational Linguistics, 2019. https://doi.org/10.18653/v1/W19-8006.
 * Ehrmann, Maud, Matteo Romanello, SImon Clematide, und Alex Flückiger. „CLEF-HIPE-2020 Shared Task Named Entity Datasets“. Zenodo, 11. März 2020. https://zenodo.org/records/6046853.
 Hamdi, Ahmed, Elvys Linhares Pontes, Emanuela Boros, Thi Tuyet Hai Nguyen, Günter Hackl, Jose G. Moreno, und Antoine Doucet. „A Multilingual Dataset for Named Entity Recognition, Entity Linking and Stance Detection in Historical Newspapers“. Gehalten auf der The 44th International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2021), 15. April 2021. https://doi.org/10.5281/zenodo.4694466.
